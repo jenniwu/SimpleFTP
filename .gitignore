@@ -1,0 +1,7 @@
+mysmtpd
+mypopd
+*.o
+mail.store/
+users.txt
+*~
+.idea/

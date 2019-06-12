@@ -1,0 +1,188 @@
+Total before late penalty: [89/100]
+
+NOTE: in the marking report something left blank (e.g.  [ /6]) typically means
+that you got full marks for that item. 
+
+[/2] BONUS for working with partner
+
+--------------------------------
+BASIC COMMON FUNCTIONALITY: [/6]
+
+[/2] Regular use of git to push changes to stash
+[/2] Working makefile produces both mysmtpd and mypopd
+[/2] Code compiles without warnings
+
+----------------------------------
+SMTP SERVER - FUNCTIONALITY: [34/40]
+
+[1/2] Initial welcome message sent successfully
+     - Correct format and code
+     - Includes node name
+
+[1/3] QUIT command functionality
+     - Accepted at any stage (except within DATA)
+     - Proper reply code
+     - Closes connection and finishes program
+
+[0/2] NOOP command functionality
+     - Accepted at any stage (except within DATA)
+     - Proper reply code
+
+[/5] HELO command functionality
+     - Accepted when connection starts
+     - Proper reply, includes received parameter
+     - If received elsewhere, one of:
+       * Option 1: accepted, resets recipients and state
+       * Option 2: rejected, proper error code
+
+[4/5] MAIL command functionality
+     - Accepted after HELO or DATA, rejected elsewhere
+     - Rejected if parameter is not FROM:<...>\r\n
+     - Accepts any source without checking it
+     - Proper reply
+
+[/7] RCPT command functionality
+     - Accepted after MAIL or another RCPT, rejected elsewhere
+     - Rejected if parameter is not TO:<...>\r\n
+     - Rejected if recipient is not in users.txt
+     - If accepted adds recipient to list of recipients
+     - Proper reply
+
+[/10] DATA command functionality
+     - Accepted after RCPT, rejected elsewhere
+     - Rejected if some parameter received
+     - Rejected if no valid recipient in list
+     - Proper initial reply (354)
+     - Properly reads data until .\r\n is found in start of line
+     - Saves read data to temporary file
+     - Copies temporary file to each recipient
+     - Deletes temporary file
+     - Proper final reply in case of success
+     - Proper final reply in case of error handling data
+
+[5/6] Invalid commands and error handling
+     - Properly replies with 500 error if line is too long
+     - Properly replies with 502 error if command is not implemented
+     - Properly replies with 500 if command is unrecognized
+     - Properly replies with 500 if command is valid but is not followed by space
+       or CRLF (e.g., HELOABC)
+     - Properly closes connection if read (or nb_read_line) returns <= 0
+     - Properly closes connection if send (or send_string/send_all) returns < 0
+
+---------------------------------
+POP3 SERVER - FUNCTIONALITY [37/40]
+
+[/1] Initial welcome message sent successfully
+     - Correct format and code
+
+[2/3] QUIT command functionality
+     - Accepted at any stage
+     - Proper reply
+     - Closes connection and finishes program
+     - Commits changes to mail data (deleted messages)
+
+[0/2] NOOP command functionality
+     - Accepted at any stage
+     - Proper reply
+
+[/3] USER command functionality
+     - Accepted when connection starts or after failed PASS, rejected elsewhere
+     - Rejected if no parameter
+     - Rejected if user is not in users.txt
+     - Accepts valid login after previous login attempt failed
+     - Proper reply
+
+[/4] PASS command functionality
+     - Accepted after USER, rejected elsewhere
+     - Rejected if no parameter
+     - Rejected if user/password not in users.txt
+     - Accepts valid login after previous login attempt failed
+     - Proper reply
+     - Properly loads user mail and switches to transaction stage
+
+[/3] STAT command functionality
+     - Accepted in transaction stage, rejected elsewhere
+     - Rejected if parameter specified
+     - Properly ignores deleted messages
+     - Proper reply in valid format
+
+[/5] LIST command functionality
+     - Accepted in transaction stage, rejected elsewhere
+     - If parameter specified:
+       * rejected if invalid parameter specified: not a number, non-existent, deleted
+       * properly replies with single line reply containing number and size
+     - If no parameter
+       * properly replies with initial line containing count and size of messages
+       * following lines include message number and size, ending in period
+       * deleted messages not listed, all other messages listed
+
+[/6] RETR command functionality
+     - Accepted in transaction stage, rejected elsewhere
+     - Rejected if no parameter
+     - Rejected if invalid parameter specified: not a number, non-existent, deleted
+     - Proper error if unable to read message file
+     - Proper successful initial reply followed by entire message
+     - Properly terminates message with line containing only period
+
+[/4] DELE command functionality
+     - Accepted in transaction stage, rejected elsewhere
+     - Rejected if no parameter
+     - Rejected if invalid parameter specified: not a number, non-existent, deleted
+     - Properly marks message as deleted
+     - Proper successful reply
+
+[/3] RSET command functionality
+     - Accepted in transaction stage, rejected elsewhere
+     - Rejected if some parameter
+     - Properly unmarks messages as deleted
+     - Proper successful reply
+
+[/6] Invalid commands and error handling
+     - Properly replies with error if line is too long
+     - Properly replies with error if command is not implemented or unrecognized
+     - Properly replies with 500 if command is valid but is not followed by space
+       or CRLF (e.g., USERABC)
+     - Properly closes connection if read (or nb_read_line) returns <= 0
+     - Properly closes connection if send (or send_string/send_all) returns < 0
+     - Deleted messages not actually deleted if no QUIT issued
+
+
+----------------------------------
+PROGRAM STRUCTURE AND STYLE: [12/14]
+
+   * Easy to read, appropriate layout, lines aren't too long, blank
+     lines delineating blocks of code functionality. (Basically 
+     does it look good and is easy to read.)  [2/3]
+
+   * Blocks of code commented. Is it clear what functionality each
+     block of code is responsible for? Is it clear what variables are
+     being used for?   [/3]
+
+   * Code is decomposed into methods. There shouldn't be long 
+     blocks of code or repeated code. [/3]
+
+   * Reasonable choice of algorithms and problem solving approach 
+     (for example doesn't read entire message from the client
+      before saving it.)              [/3]
+
+   * Marker's discretion   [1/2]
+
+
+MARKER'S ADDITIONAL COMMENTS:
+SMTP
+* HELO's response does not include node name
+* Most times, a QUIT does not end the connection (I get a 221 status back, but the
+connection remains active)
+* when sending a NOOP command, I do not get any reply from the server
+* multiple sequence of MAIL commands are accepted
+* HELOABC command returns "250 Hello, BC"
+
+POP
+* NOOP rejected before authentication
+* QUIT command sometimes does not quit (in transaction state)
+
+General comments
+* struct net_buffer redefined on mypopd.c - not the correct way to fix the problem
+* mysmtpd has memory leaks (e.g., `sender' variable). All of these values could be
+more easily handled by using stack memory rather than using using malloc.
+* commented out code left behind. Be more careful next time and clean up the final version.
